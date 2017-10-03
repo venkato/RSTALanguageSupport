@@ -21,6 +21,7 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,7 +39,6 @@ import javax.swing.border.Border;
 
 import org.fife.rsta.ac.java.buildpath.JarLibraryInfo;
 import org.fife.rsta.ac.java.buildpath.LibraryInfo;
-import org.fife.rsta.ac.perl.PerlLanguageSupport;
 
 
 /**
@@ -99,8 +99,8 @@ public class AboutDialog extends JDialog {
 		SpringLayout sl = new SpringLayout();
 		JPanel temp = new JPanel(sl);
 		JLabel perlLabel = new JLabel("Perl install location:");
-		File loc = PerlLanguageSupport.getDefaultPerlInstallLocation();
-		String text = loc==null ? null : loc.getAbsolutePath();
+//		File loc = PerlLanguageSupport.getDefaultPerlInstallLocation();
+		String text = null ;
 		JTextField perlField = createTextField(text);
 		JLabel javaLabel = new JLabel("Java home:");
 		String jre = null;

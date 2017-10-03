@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -27,6 +28,7 @@ import org.fife.rsta.ac.ShorthandCompletionCache;
 import org.fife.rsta.ac.java.buildpath.LibraryInfo;
 import org.fife.rsta.ac.java.buildpath.SourceLocation;
 import org.fife.rsta.ac.java.classreader.*;
+import org.fife.rsta.ac.java.custom.AutoCompleteUtils;
 import org.fife.rsta.ac.java.rjc.ast.*;
 import org.fife.rsta.ac.java.rjc.lang.Type;
 import org.fife.rsta.ac.java.rjc.lang.TypeArgument;
@@ -58,6 +60,9 @@ import org.fife.ui.rsyntaxtextarea.Token;
  */
 class SourceCompletionProvider extends DefaultCompletionProvider {
 
+	
+	private static final Logger log = Logger.getLogger(SourceCompletionProvider.class.getName()); 
+			
     public static boolean loadPrivateMemberAlways = true;
 
 	/**
@@ -178,13 +183,19 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 		}
 
         // add completions for any public inner classes
-        List<ClassFile> packageFiles = jarManager.getClassesInPackage(cf.getPackageName(), true);
-        for (int i = 0;packageFiles != null && i < packageFiles.size();i++) {
-            ClassFile pf = packageFiles.get(i);
-            if (pf.getClassName(true).startsWith(cf.getClassName(true) + ".") && (pf.getAccessFlags() & AccessFlags.ACC_PUBLIC) > 0) {
-                set.add(new ClassCompletion(this, pf, pf.getClassName(false).substring(pf.getClassName(false).lastIndexOf(".") + 1)));
-            }
-        }
+		List<ClassFile> packageFiles = jarManager.getClassesInPackage(cf.getPackageName(), true);
+		for (int i = 0; packageFiles != null && i < packageFiles.size(); i++) {
+			ClassFile pf = packageFiles.get(i);
+			if (pf == null) {
+				log.info("packaged files is null");
+			} else {
+				if (pf.getClassName(true).startsWith(cf.getClassName(true) + ".")
+						&& (pf.getAccessFlags() & AccessFlags.ACC_PUBLIC) > 0) {
+					set.add(new ClassCompletion(this, pf,
+							pf.getClassName(false).substring(pf.getClassName(false).lastIndexOf(".") + 1)));
+				}
+			}
+		}
 
 		// Add completions for any non-overridden super-class methods.
 		ClassFile superClass = getClassFileFor(cu, cf.getSuperClassName(true));
@@ -205,7 +216,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 //                    else superTypeParamMap.put(typ, superClass.getTypeArgument(typ));
 //                }
 //            }
-            addCompletionsForExtendedClass(set, cu, superClass, pkg, superTypeParamMap, staticOnly);
+           	addCompletionsForExtendedClass(set, cu, superClass, pkg, superTypeParamMap, staticOnly);
 		}
 
 		// Add completions for any interface methods, in case this class is
@@ -1379,14 +1390,14 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 
         List<Completion> result = new ArrayList<Completion>();
         // get text parts for the search text
-        List<String> textParts = org.fife.ui.autocomplete.Util.getTextParts(text);
+        List<String> textParts = AutoCompleteUtils.getTextParts(text);
 
         for (Completion completion : completions) {
             // get text parts for current completion
-            List<String> completionParts = org.fife.ui.autocomplete.Util.getTextParts(completion.getInputText());
+            List<String> completionParts = AutoCompleteUtils.getTextParts(completion.getInputText());
 
             // check if the parts of the completion starts with the parts of the search text
-            if (org.fife.ui.autocomplete.Util.matchTextParts(textParts, completionParts)) result.add(completion);
+            if (AutoCompleteUtils.matchTextParts(textParts, completionParts)) result.add(completion);
         }
 
         return result;
@@ -2691,7 +2702,12 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
         }
 
         // if not found, try within the same package (since there is no import for same package classes)
-        matches = jarManager.getClassesInPackage(cu.getPackageName(), false);
+        String packageName = cu.getPackageName();
+        if(packageName==null) {
+        	log.info("package is null");
+        	return null;
+        }
+        matches = jarManager.getClassesInPackage(packageName, false);
         if (matches != null) {
             for (int i = 0; i < matches.size(); i++) {
                 ClassFile cf = matches.get(i);
