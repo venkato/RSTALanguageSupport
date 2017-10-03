@@ -11,6 +11,7 @@
 package org.fife.rsta.ac.java;
 
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 import org.fife.rsta.ac.ShorthandCompletionCache;
 import org.fife.ui.autocomplete.BasicCompletion;
@@ -26,6 +27,7 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
  */
 public class JavaShorthandCompletionCache extends ShorthandCompletionCache {
 
+	private static final Logger log = Logger.getLogger(JavaShorthandCompletionCache.class.getName());
 	private static final String MSG = "org.fife.rsta.ac.java.resources";
 	private static final ResourceBundle msg = ResourceBundle.getBundle(MSG);
 	
@@ -36,6 +38,11 @@ public class JavaShorthandCompletionCache extends ShorthandCompletionCache {
 		String template = null;
 
 		//load defaults
+		
+		template = "u.out.add(${});${cursor}";
+		addShorthandCompletion(new JavaTemplateCompletion(templateProvider, "uout", "uout", template,
+				msg.getString("u.out.add"), msg.getString("u.out.add")));
+		
 		template = "System.out.println(${});${cursor}";
 		addShorthandCompletion(new JavaTemplateCompletion(templateProvider, "sysout", "sysout", template,
 				msg.getString("sysout.shortDesc"), msg.getString("sysout.summary")));

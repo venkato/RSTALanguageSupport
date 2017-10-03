@@ -59,7 +59,7 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 	 * The shared jar manager to use with all {@link JavaCompletionProvider}s,
 	 * or <code>null</code> if each one should have a unique jar manager.
 	 */
-	private JarManager jarManager;
+	public JarManager jarManager;
 
 	/**
 	 * Client property installed on text areas that points to a listener.
@@ -107,6 +107,9 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 		return jarManager;
 	}
 
+	public void setJarManager(JarManager jarManager) {
+		this.jarManager = jarManager;
+	}
 
 	/**
 	 * Returns the Java parser running on a text area with this Java language
@@ -124,6 +127,8 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 		}
 		return null;
 	}
+	
+	public JavaAutoCompletion ac;
 
 
 	/**
@@ -134,7 +139,7 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 
 		JavaCompletionProvider p = new JavaCompletionProvider(jarManager);
 		// Can't use createAutoCompletion(), as Java's is "special."
-		AutoCompletion ac = new JavaAutoCompletion(p, textArea);
+		ac = new JavaAutoCompletion(p, textArea);
 		ac.setListCellRenderer(new JavaCellRenderer());
 		ac.setAutoCompleteEnabled(isAutoCompleteEnabled());
 		ac.setAutoActivationEnabled(isAutoActivationEnabled());
@@ -315,7 +320,7 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 	 * added.  This is used internally when a class completion is inserted,
 	 * and it needs an import statement added to the source.
 	 */
-	private static class ImportToAddInfo {
+	public static class ImportToAddInfo {
 
 		public int offs;
 		public String text;
@@ -373,7 +378,7 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 	 * A hack of <tt>AutoCompletion</tt> that forces the <tt>JavaParser</tt>
 	 * to re-parse the document when the user presses ctrl+space.
 	 */
-	private class JavaAutoCompletion extends AutoCompletion {
+	public class JavaAutoCompletion extends AutoCompletion {
 
 		private RSyntaxTextArea textArea;
 		private String replacementTextPrefix;
@@ -437,7 +442,7 @@ public class JavaLanguageSupport extends AbstractLanguageSupport {
 		 * @param cc The completion being inserted.
 		 * @return Whether an import was added.
 		 */
-		private ImportToAddInfo getShouldAddImport(ClassCompletion cc) {
+		public ImportToAddInfo getShouldAddImport(ClassCompletion cc) {
 
 			String text = getCurrentLineText();
 

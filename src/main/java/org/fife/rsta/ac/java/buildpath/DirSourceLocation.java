@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.fife.rsta.ac.java.classreader.ClassFile;
 import org.fife.rsta.ac.java.rjc.ast.CompilationUnit;
@@ -29,6 +30,10 @@ import org.fife.rsta.ac.java.rjc.parser.ASTFactory;
  */
 public class DirSourceLocation implements SourceLocation {
 
+	
+	private static final Logger log = Logger.getLogger(DirSourceLocation.class.getName());
+	
+	
 	private File dir;
 
 

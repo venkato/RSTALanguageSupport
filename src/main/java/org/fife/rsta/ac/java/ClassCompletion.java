@@ -31,7 +31,7 @@ import org.fife.ui.autocomplete.CompletionProvider;
  * @author Robert Futrell
  * @version 1.0
  */
-class ClassCompletion extends AbstractJavaSourceCompletion {
+public class ClassCompletion extends AbstractJavaSourceCompletion {
 
 	private ClassFile cf;
 

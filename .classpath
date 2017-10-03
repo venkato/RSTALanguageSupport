@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry excluding="org/fife/rsta/ac/js/|org/fife/rsta/ac/js/ast/|org/fife/rsta/ac/js/ast/jsType/|org/fife/rsta/ac/js/ast/parser/|org/fife/rsta/ac/js/ast/type/|org/fife/rsta/ac/js/ast/type/ecma/|org/fife/rsta/ac/js/ast/type/ecma/client/|org/fife/rsta/ac/js/ast/type/ecma/e4x/|org/fife/rsta/ac/js/ast/type/ecma/v3/|org/fife/rsta/ac/js/ast/type/ecma/v5/|org/fife/rsta/ac/js/completion/|org/fife/rsta/ac/js/ecma/api/client/|org/fife/rsta/ac/js/ecma/api/client/funtions/|org/fife/rsta/ac/js/ecma/api/dom/|org/fife/rsta/ac/js/ecma/api/dom/html/|org/fife/rsta/ac/js/ecma/api/e4x/|org/fife/rsta/ac/js/ecma/api/e4x/functions/|org/fife/rsta/ac/js/ecma/api/ecma3/|org/fife/rsta/ac/js/ecma/api/ecma3/functions/|org/fife/rsta/ac/js/ecma/api/ecma5/|org/fife/rsta/ac/js/ecma/api/ecma5/functions/|org/fife/rsta/ac/js/engine/|org/fife/rsta/ac/js/resolver/|org/fife/rsta/ac/js/tree/|org/fife/rsta/ac/js/util/|org/fife/rsta/ac/jsp/|org/fife/rsta/ac/less/|org/fife/rsta/ac/perl/|org/fife/rsta/ac/php/|org/fife/rsta/ac/sh/|org/fife/rsta/ac/ts/|org/fife/rsta/ac/xml/|org/fife/rsta/ac/xml/tree/|org/fife/rsta/ac/c/|org/fife/rsta/ac/css/|org/fife/rsta/ac/html/" kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/test/resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/AutoComplete"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/RSyntaxTextArea"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jremoterun"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jrr-utilities"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/log4j"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

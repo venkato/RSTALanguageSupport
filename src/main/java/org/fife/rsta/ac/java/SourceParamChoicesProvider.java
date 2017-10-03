@@ -14,6 +14,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.text.JTextComponent;
@@ -26,6 +27,7 @@ import org.fife.rsta.ac.java.classreader.MethodInfo;
 import org.fife.rsta.ac.java.rjc.ast.*;
 import org.fife.rsta.ac.java.rjc.ast.Package;
 import org.fife.rsta.ac.java.rjc.lang.Type;
+import org.fife.rsta.ac.java.rjc.parser.ASTFactory;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -46,10 +48,13 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
  */
 class SourceParamChoicesProvider implements ParameterChoicesProvider {
 
+	
+	private static final Logger log = Logger.getLogger(SourceParamChoicesProvider.class.getName());
+	
 	/**
 	 * The parent {@link JavaCompletionProvider}.
 	 */
-	private CompletionProvider provider;
+	private JavaCompletionProvider provider;
 
 
 	/**
@@ -70,7 +75,8 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
             // do processing according to cf, search for public methods and fields
             for (int i = 0;i < cf.getMethodCount();i++) {
                 MethodInfo mi = cf.getMethodInfo(i);
-                if (isTypeCompatible(null, new Type(findFullyQualifiedNameFor(cu, jm, mi.getReturnTypeString(true))), paramType, jm)) {
+                Type type7 = new Type(findFullyQualifiedNameFor(cu, jm, mi.getReturnTypeString(true)));
+                if (isTypeCompatible(null, type7, paramType, jm)) {
                     MethodCompletion mc = new MethodCompletion(((JavaCompletionProvider) provider).getDefaultCompletionProvider(), mi);
                     if (!list.contains(mc)) list.add(mc);
                 }
@@ -183,7 +189,7 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
 				Type fieldType = new Type(findFullyQualifiedNameFor(cu, jm, member.getType().getName(true)));
 				if (isTypeCompatible(cu, fieldType, type, jm)) {
 					//members.add(member.getName());
-					FieldCompletion fc = new FieldCompletion(((JavaCompletionProvider) provider).getDefaultCompletionProvider(), (Field)member);
+					FieldCompletion fc = new FieldCompletion((provider).getDefaultCompletionProvider(), (Field)member);
                     if (!members.contains(fc)) members.add(fc);
 				}
 			}
@@ -192,7 +198,7 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
 				if (isSimpleGetter(method)) {
 					if (isTypeCompatible(cu, new Type(findFullyQualifiedNameFor(cu, jm, method.getType().getName(true))), type, jm)) {
 						//members.add(member.getName() + "()");
-						MethodCompletion mc = new MethodCompletion(((JavaCompletionProvider) provider).getDefaultCompletionProvider(), method);
+						MethodCompletion mc = new MethodCompletion(( provider).getDefaultCompletionProvider(), method);
                         if (!members.contains(mc)) members.add(mc);
 					}
 				}
@@ -206,12 +212,17 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
 
     protected void addParamChoices(CompilationUnit cu, List<Completion> list, TypeDeclaration typeDec, ParameterizedCompletion.Parameter param, int dot, JarManager jm) {
         Package pkg = typeDec.getPackage();
-
-        String paramFQType = findFullyQualifiedNameFor(cu, jm, param.getType());
+        String paramType7 = param.getType();
+        String paramFQType = findFullyQualifiedNameFor(cu, jm, paramType7);
+        if(paramFQType==null) {
+        	log.info("paramFQType is null for "+cu+" "+paramType7+" "+pkg+" "+param+" "+typeDec);
+        	throw new RuntimeException("paramFQType is null for "+cu+" "+paramType7+" "+pkg+" "+param+" "+typeDec);
+//        	return;
+        }
 
         // If we're in a class, we'll have to check for local variables, etc.
         if (typeDec instanceof NormalClassDeclaration) {
-
+        	
             // Get accessible members of this type.
             NormalClassDeclaration ncd = (NormalClassDeclaration)typeDec;
             getLocalVarsFieldsAndGetters(cu, ncd, paramFQType, dot, list, jm);
@@ -220,7 +231,11 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
             // Get accessible members of the extended type.
             Type extended = ncd.getExtendedType();
             if (extended!=null) {
-                addPublicAndProtectedFieldsAndGetters(cu, extended, paramFQType, jm, pkg, list);
+            	if(paramType7==null) {
+            		//log.info("skip params completion");
+            	}else {
+            		addPublicAndProtectedFieldsAndGetters(cu, extended, paramFQType, jm, pkg, list);
+            	}
             }
 
             // Get accessible members of any implemented interfaces.
@@ -433,10 +448,10 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
 	// TODO: Get me working!  Probably need better parameters passed in!!!
     // changed to public static, since this logic is also used in SourceCompletionProvider. Consider move these methods to
     // Util
-	public static boolean isTypeCompatible(CompilationUnit cu, Type type, String typeName, JarManager jm) {
+	public static boolean isTypeCompatible(CompilationUnit cu, Type type, String typeNameOrig, JarManager jm) {
 
 		String typeName2 = SourceParamChoicesProvider.findFullyQualifiedNameFor(cu, jm, type.getName(true));
-        typeName = SourceParamChoicesProvider.findFullyQualifiedNameFor(cu, jm, typeName);
+        String typeName = SourceParamChoicesProvider.findFullyQualifiedNameFor(cu, jm, typeNameOrig);
 
         // void type cannot accept anything
         if ("void".equals(typeName2)) return false;
@@ -457,8 +472,15 @@ class SourceParamChoicesProvider implements ParameterChoicesProvider {
 //		}
 
         // if typeName is Object, accept all non primitive types
-        if (typeName.equals(Object.class.getName()) && !isPrimitiveNumericType(type.getName(true)) && !typeName2.equals("boolean")) {
-            return true;
+        if(typeName==null) {
+        	throw new NullPointerException("failed find type name "+typeName+" "+typeName2+" "+typeNameOrig+" "+cu);
+        }
+        if (typeName.equals(Object.class.getName())) {
+        	if( !isPrimitiveNumericType(type.getName(true))) {
+        		if(!typeName2.equals("boolean")) {
+                    return true;	
+        		}        		
+        	}
         }
         if (typeName2.equalsIgnoreCase(typeName)) {
             return true;

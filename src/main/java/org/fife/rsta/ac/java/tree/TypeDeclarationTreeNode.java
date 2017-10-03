@@ -10,10 +10,13 @@
  */
 package org.fife.rsta.ac.java.tree;
 
+import java.util.logging.Logger;
+
 import javax.swing.Icon;
 
 import org.fife.rsta.ac.java.DecoratableIcon;
 import org.fife.rsta.ac.java.IconFactory;
+import org.fife.rsta.ac.java.classreader.attributes.Signature;
 import org.fife.rsta.ac.java.rjc.ast.EnumDeclaration;
 import org.fife.rsta.ac.java.rjc.ast.NormalClassDeclaration;
 import org.fife.rsta.ac.java.rjc.ast.NormalInterfaceDeclaration;
@@ -29,6 +32,7 @@ import org.fife.rsta.ac.java.rjc.lang.Modifiers;
  */
 class TypeDeclarationTreeNode extends JavaTreeNode {
 
+	private static final Logger log = Logger.getLogger(TypeDeclarationTreeNode.class.getName());
 
 	public TypeDeclarationTreeNode(TypeDeclaration typeDec) {
 
@@ -93,7 +97,7 @@ class TypeDeclarationTreeNode extends JavaTreeNode {
 		Icon mainIcon = fact.getIcon(iconName);
 
 		if (mainIcon==null) { // Unknown type ???
-			System.out.println("*** " + typeDec);
+			log.info("*** " + typeDec);
 		}
 		else {
 			DecoratableIcon di = new DecoratableIcon(mainIcon);

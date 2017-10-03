@@ -14,7 +14,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+import org.fife.rsta.ac.java.classreader.ClassFile;
 import org.fife.rsta.ac.java.rjc.ast.AbstractTypeDeclarationNode;
 import org.fife.rsta.ac.java.rjc.ast.CodeBlock;
 import org.fife.rsta.ac.java.rjc.ast.CompilationUnit;
@@ -48,6 +50,8 @@ import org.fife.rsta.ac.java.rjc.notices.ParserNotice;
  * @version 1.0
  */
 public class ASTFactory implements TokenTypes {
+	
+	private static final Logger log = Logger.getLogger(ASTFactory.class.getName());
 
 	private static final boolean DEBUG = false;
 
@@ -1600,7 +1604,7 @@ OUTER:
 
 	private static final void log(String msg) {
 		if (DEBUG) {
-			System.out.println(msg);
+			log.info(msg);
 		}
 	}
 

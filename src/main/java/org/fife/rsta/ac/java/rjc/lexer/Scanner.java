@@ -15,9 +15,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+
+import org.fife.rsta.ac.java.classreader.ClassFile;
 
 
 /**
@@ -29,6 +33,8 @@ import javax.swing.text.Position;
  */
 public class Scanner {
 
+	private static final Logger log = Logger.getLogger(Scanner.class.getName());
+	
 	private static final boolean DEBUG = false;
 
 	/**
@@ -155,10 +161,10 @@ private void pushOntoStack(Token t) {
 	private void debugPrintToken(Token t) {
 		if (DEBUG) {
 			if (t==null) {
-				System.out.println("... null");
+				log.info("... null");
 			}
 			else {
-				System.out.println("... " + t);
+				log.info("... " + t);
 			}
 		}
 	}

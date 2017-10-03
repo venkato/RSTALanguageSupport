@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -27,7 +28,9 @@ import org.fife.rsta.ac.ShorthandCompletionCache;
 import org.fife.rsta.ac.java.buildpath.LibraryInfo;
 import org.fife.rsta.ac.java.buildpath.SourceLocation;
 import org.fife.rsta.ac.java.classreader.*;
+import org.fife.rsta.ac.java.custom.AutoCompleteUtils;
 import org.fife.rsta.ac.java.rjc.ast.*;
+import org.fife.rsta.ac.java.rjc.lang.Modifiers;
 import org.fife.rsta.ac.java.rjc.lang.Type;
 import org.fife.rsta.ac.java.rjc.lang.TypeArgument;
 import org.fife.rsta.ac.java.rjc.lang.TypeParameter;
@@ -56,8 +59,11 @@ import org.fife.ui.rsyntaxtextarea.Token;
  * @author Robert Futrell
  * @version 1.0
  */
-class SourceCompletionProvider extends DefaultCompletionProvider {
+public class SourceCompletionProvider extends DefaultCompletionProvider {
 
+	
+	private static final Logger log = Logger.getLogger(SourceCompletionProvider.class.getName()); 
+			
     public static boolean loadPrivateMemberAlways = true;
 
 	/**
@@ -178,13 +184,19 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 		}
 
         // add completions for any public inner classes
-        List<ClassFile> packageFiles = jarManager.getClassesInPackage(cf.getPackageName(), true);
-        for (int i = 0;packageFiles != null && i < packageFiles.size();i++) {
-            ClassFile pf = packageFiles.get(i);
-            if (pf.getClassName(true).startsWith(cf.getClassName(true) + ".") && (pf.getAccessFlags() & AccessFlags.ACC_PUBLIC) > 0) {
-                set.add(new ClassCompletion(this, pf, pf.getClassName(false).substring(pf.getClassName(false).lastIndexOf(".") + 1)));
-            }
-        }
+		List<ClassFile> packageFiles = jarManager.getClassesInPackage(cf.getPackageName(), true);
+		for (int i = 0; packageFiles != null && i < packageFiles.size(); i++) {
+			ClassFile pf = packageFiles.get(i);
+			if (pf == null) {
+				log.info("packaged files is null");
+			} else {
+				if (pf.getClassName(true).startsWith(cf.getClassName(true) + ".")
+						&& (pf.getAccessFlags() & AccessFlags.ACC_PUBLIC) > 0) {
+					set.add(new ClassCompletion(this, pf,
+							pf.getClassName(false).substring(pf.getClassName(false).lastIndexOf(".") + 1)));
+				}
+			}
+		}
 
 		// Add completions for any non-overridden super-class methods.
 		ClassFile superClass = getClassFileFor(cu, cf.getSuperClassName(true));
@@ -205,7 +217,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 //                    else superTypeParamMap.put(typ, superClass.getTypeArgument(typ));
 //                }
 //            }
-            addCompletionsForExtendedClass(set, cu, superClass, pkg, superTypeParamMap, staticOnly);
+           	addCompletionsForExtendedClass(set, cu, superClass, pkg, superTypeParamMap, staticOnly);
 		}
 
 		// Add completions for any interface methods, in case this class is
@@ -214,7 +226,11 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 		for (int i=0; i<cf.getImplementedInterfaceCount(); i++) {
 			String inter = cf.getImplementedInterfaceName(i, true);
 			cf = getClassFileFor(cu, inter);
-			addCompletionsForExtendedClass(set, cu, cf, pkg, typeParamMap, staticOnly);
+			if(cf ==null) {
+				log.info("failed resolve class "+inter+" , cu = "+cu.getName());
+			}else {
+				addCompletionsForExtendedClass(set, cu, cf, pkg, typeParamMap, staticOnly);
+			}
 		}
 
 	}
@@ -1379,14 +1395,14 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 
         List<Completion> result = new ArrayList<Completion>();
         // get text parts for the search text
-        List<String> textParts = org.fife.ui.autocomplete.Util.getTextParts(text);
+        List<String> textParts = AutoCompleteUtils.getTextParts(text);
 
         for (Completion completion : completions) {
             // get text parts for current completion
-            List<String> completionParts = org.fife.ui.autocomplete.Util.getTextParts(completion.getInputText());
+            List<String> completionParts = AutoCompleteUtils.getTextParts(completion.getInputText());
 
             // check if the parts of the completion starts with the parts of the search text
-            if (org.fife.ui.autocomplete.Util.matchTextParts(textParts, completionParts)) result.add(completion);
+            if (AutoCompleteUtils.matchTextParts(textParts, completionParts)) result.add(completion);
         }
 
         return result;
@@ -1739,7 +1755,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
                         if (extendedTd != null) {
                             addCompletionsForInnerClass(retVal, cu, extendedTd, createTypeParamMap(extended, extendedTd), false);
                         }
-                        else System.out.println("[DEBUG]: Couldn't find ClassFile for: " + superClassName);
+                        else log.info("Couldn't find ClassFile for: " + superClassName);
 					}
 				}
 			}
@@ -1981,7 +1997,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
                     addConstructors(retVal, extendedTd, forSuper);
                 }
             }
-            else System.out.println("[DEBUG]: Couldn't find ClassFile for: " + extendedType.getName(true));
+            else log.info("Couldn't find ClassFile for: " + extendedType.getName(true));
         }
     }
 
@@ -2018,8 +2034,18 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
             }
         }
         // no constructor found, we should add a default constructor proposal
-        if (!foundConstructor && !(td instanceof NormalInterfaceDeclaration) && !td.getModifiers().isAbstract()) {
-            retVal.add(MethodCompletion.createDefaultConstructorCompletion(this, forSuper ? "super" : td.getName(false) + (((NormalClassDeclaration) td).getTypeParameters() != null && ((NormalClassDeclaration) td).getTypeParameters().size() > 0 ? "<>" : ""), new Type(td.getName(false))));
+        if (!foundConstructor && !(td instanceof NormalInterfaceDeclaration) ) {
+			Modifiers modifiers = td.getModifiers();
+			if (modifiers == null) {
+				log.info("modfiers is null for type " + td.getName() + ", td = " + td);
+			} 
+			if (modifiers ==null || !modifiers.isAbstract()) {
+				retVal.add(MethodCompletion.createDefaultConstructorCompletion(this, forSuper ? "super"
+						: td.getName(false) + (((NormalClassDeclaration) td).getTypeParameters() != null
+								&& ((NormalClassDeclaration) td).getTypeParameters().size() > 0 ? "<>" : ""),
+						new Type(td.getName(false))));
+			}
+			
         }
     }
 
@@ -2088,7 +2114,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
             return null;
         }
         if (methodInfoByName.size() > 1) {
-            // System.out.println(methodInfoByName.size() + " " + methodName);
+            log.info("found methods : "+methodInfoByName.size() + " " + methodName);
         }
 
         MethodInfo methodInfo = methodInfoByName.get(0);
@@ -2288,10 +2314,15 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
         return fieldInfo;
     }
 
+    // TODO:
+    // we failed resolve like :
+    // Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
     private Type resolveTypeWithDot(CompilationUnit cu, String alreadyEntered,
                                     TypeDeclaration td, Method currentMethod, String prefix, int offs, int dot) {
+//    	log.info("prefix = "+prefix);
         String beforeDot = prefix.substring(0, dot).trim();
         String afterDot = prefix.substring(dot + 1).trim();
+//        log.info("prefix = "+afterDot);
         // System.out.println(beforeDot);
         // System.out.println(afterDot);
         Type type = resolveType2(cu, alreadyEntered, td, currentMethod, beforeDot, offs);
@@ -2312,6 +2343,10 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
                 // System.out.println(methodName + " " + countMethodParams);
 
                 MethodInfo methodInfo = findMethod(cf, methodName, countMethodParams);
+                if(methodInfo==null) {
+                	log.info("failed resolve method : cf = "+cf.getClassName(true)+", method = "+methodName+", "+countMethodParams+" , params :"+params);
+                	return null;
+                }
                 String returnTypeString = methodInfo.getReturnTypeFull();
                 returnTypeString = returnTypeString.replaceAll("<.+>", "");
                 // System.out.println(returnTypeString + " 123");
@@ -2632,14 +2667,19 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
                 }
             }
             // check method local variables for a match
-            for (int i = 0;i < currentMethod.getBody().getLocalVarCount();i++) {
+            CodeBlock body = currentMethod.getBody();
+            if(body==null) {
+            	log.info("body is null for : cu = "+cu+", method = "+currentMethod+", type = "+td+", prefix = "+prefix+", so return null");
+            	return null;
+            }
+            for (int i = 0;i < body.getLocalVarCount();i++) {
                 LocalVariable localVariable = currentMethod.getBody().getLocalVar(i);
                 if (prefix.equals(localVariable.getName())) {
                     return localVariable.getType();
                 }
             }
             // if not found in the method body or in method parameter, try in the child code blocks
-            if (currentMethod.getBody().getChildBlockCount() > 0) {
+            if (body.getChildBlockCount() > 0) {
                 CodeBlock codeBlock = currentMethod.getBody().getDeepestCodeBlockContaining(offs);
                 Type t = null;
                 while (t == null && codeBlock != null) {
@@ -2691,7 +2731,12 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
         }
 
         // if not found, try within the same package (since there is no import for same package classes)
-        matches = jarManager.getClassesInPackage(cu.getPackageName(), false);
+        String packageName = cu.getPackageName();
+        if(packageName==null) {
+        	log.info("package is null for "+cu.getName());
+        	return null;
+        }
+        matches = jarManager.getClassesInPackage(packageName, false);
         if (matches != null) {
             for (int i = 0; i < matches.size(); i++) {
                 ClassFile cf = matches.get(i);
@@ -2977,7 +3022,7 @@ class SourceCompletionProvider extends DefaultCompletionProvider {
 		prefix2 = prefix2.replace("@", "");
 		Type type = resolveType2(cu, alreadyEntered,  td, currentMethod, prefix2, offs);
 		if (type == null) {
-            // System.out.println("type is null " + prefix);
+//            log.info("type is null " + prefix);
 		} else {
             if (type.isArray()) {
                 ClassFile cf = getClassFileFor(cu, "java.lang.Object");

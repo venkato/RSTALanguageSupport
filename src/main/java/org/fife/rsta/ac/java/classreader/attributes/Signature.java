@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.fife.rsta.ac.java.classreader.ClassFile;
 import org.fife.rsta.ac.java.classreader.MethodInfo;
+import org.fife.rsta.ac.java.custom.RSyntaxTextAreaCodeAssist;
 
 
 /**
@@ -30,6 +32,8 @@ import org.fife.rsta.ac.java.classreader.MethodInfo;
  */
 public class Signature extends AttributeInfo {
 
+	private static final Logger log = Logger.getLogger(Signature.class.getName());
+	
 	private String signature;
 
 
@@ -71,12 +75,12 @@ public class Signature extends AttributeInfo {
 						colon = temp.indexOf(':', offs);
 					}
 					else {
-						System.err.println("WARN: Can't parse signature (1): " + signature);
+						log.warning("Can't parse signature (1): " + signature);
 						break;
 					}
 				}
 				else {
-					System.err.println("WARN: Can't parse signature (2): " + signature);
+					log.warning("WARN: Can't parse signature (2): " + signature);
 					break;
 				}
 			}
@@ -138,7 +142,7 @@ public class Signature extends AttributeInfo {
 					parseParamDescriptor(paramDescriptors, cf, additionalTypeArgs,
 							mi, "Error parsing method signature for ", res, qualified);
 					paramTypeList.add(res.type);
-					if(paramDescriptors.length()>res.pos) {
+					if(res.pos > 0 && paramDescriptors.length() > res.pos) {
 						paramDescriptors = paramDescriptors.substring(res.pos);
 					} else {
 						break;
@@ -148,7 +152,7 @@ public class Signature extends AttributeInfo {
 			}
 
 			else {
-				System.out.println("TODO: Unhandled method signature for " +
+				log.info("TODO: Unhandled method signature for " +
 						mi.getName() + ": " + signature);
 			}
 
@@ -187,7 +191,7 @@ public class Signature extends AttributeInfo {
 			}
 
 			else {
-				System.out.println("TODO: Unhandled method signature for " +
+				log.info("TODO: Unhandled method signature for " +
 						mi.getName() + ": " + signature);
 			}
 
@@ -253,6 +257,8 @@ public class Signature extends AttributeInfo {
 		return additionalTypeArgs;
 
 	}
+	
+	public static boolean throwExc1 = false;
 
 
 	private ParamDescriptorResult parseParamDescriptor(String str,
@@ -313,8 +319,12 @@ public class Signature extends AttributeInfo {
 					int offs = skipLtGt(str, lt+1);
 					// There should be a ';' after type parameters
 					if (offs==str.length() || str.charAt(offs)!=';') {
-						System.out.println("TODO: " + errorDesc +
-								mi.getName() + ": " + signature);
+						String msg ="TODO: " + errorDesc +
+								mi.getName() + ": " + signature;
+						if(throwExc1) {
+							throw new IllegalStateException(msg);
+						}
+						log.info(msg);
 						type = "ERROR_PARSING_METHOD_SIG";
 					}
 					else {
@@ -328,11 +338,16 @@ public class Signature extends AttributeInfo {
 						ParamDescriptorResult res2 = new ParamDescriptorResult();
 						List<String> paramTypeList = new ArrayList<String>();
 						// Recursively parse type parameters of this parameter
+						int loopCount = 0;
 						while (paramDescriptors.length()>0) {
+							loopCount++;
+							if(loopCount>200) {
+								throw new RuntimeException("failed parse "+str+" "+cf+" "+additionalTypeArgs+" "+mi+" "+errorDesc+" "+qualified);
+							}
 							parseParamDescriptor(paramDescriptors, cf, additionalTypeArgs,
 									mi, "Error parsing method signature for ", res2, qualified);
 							paramTypeList.add(res2.type);
-							if(paramDescriptors.length()>res2.pos) {
+							if(res2.pos >0 && paramDescriptors.length()>res2.pos) {
 								paramDescriptors = paramDescriptors.substring(res2.pos);
 							} else {
 								break;

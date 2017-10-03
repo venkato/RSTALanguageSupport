@@ -17,6 +17,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +33,8 @@ import org.fife.rsta.ac.java.rjc.ast.CompilationUnit;
  * @version 1.0
  */
 public class Util {
+	
+	private static final Logger log = Logger.getLogger(Util.class.getName());
 
 	/**
 	 * Optional leading text for doc comment lines (except the first line) that
@@ -378,7 +381,7 @@ public class Util {
 		}
 
 		else { // Malformed link tag
-System.out.println("Unmatched linkContent: " + linkContent);
+log.info("Unmatched linkContent: " + linkContent);
 			appendTo.append(linkContent);
 		}
 
