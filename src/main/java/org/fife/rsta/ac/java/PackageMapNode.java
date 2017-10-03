@@ -20,6 +20,7 @@ import java.util.TreeMap;
 
 import org.fife.rsta.ac.java.buildpath.LibraryInfo;
 import org.fife.rsta.ac.java.classreader.ClassFile;
+import org.fife.rsta.ac.java.custom.AutoCompleteUtils;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
@@ -341,7 +342,7 @@ public class PackageMapNode {
 			String currentPkg, List<ClassFile> addTo) {
 
 		final int prefixLen = prefix.length();
-        List<String> prefixParts = org.fife.ui.autocomplete.Util.getTextParts(prefix);
+        List<String> prefixParts = AutoCompleteUtils.getTextParts(prefix);
 
 		for (Map.Entry<String, PackageMapNode> children : subpackages.entrySet()) {
 			String key = children.getKey();
@@ -356,7 +357,7 @@ public class PackageMapNode {
 			// typed).
 			String className = cfEntry.getKey();
             // extend the match with our textPartsMatch, creating a match for example JTP with JTabbedPane
-            if (className.regionMatches(true, 0, prefix.toLowerCase(), 0, prefixLen) || org.fife.ui.autocomplete.Util.matchTextParts(prefixParts, org.fife.ui.autocomplete.Util.getTextParts(className))) {
+            if (className.regionMatches(true, 0, prefix.toLowerCase(), 0, prefixLen) || AutoCompleteUtils.matchTextParts(prefixParts, AutoCompleteUtils.getTextParts(className))) {
 				ClassFile cf = cfEntry.getValue();
 				if (cf==null) {
 					String fqClassName = currentPkg + className + ".class";

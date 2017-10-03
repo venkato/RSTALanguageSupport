@@ -13,6 +13,7 @@ package org.fife.rsta.ac.java;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
 
+import org.fife.rsta.ac.java.custom.JavaRstaLinkGeneratorResult;
 import org.fife.rsta.ac.java.rjc.ast.CompilationUnit;
 import org.fife.rsta.ac.java.rjc.ast.Method;
 import org.fife.rsta.ac.java.rjc.ast.TypeDeclaration;
@@ -20,6 +21,7 @@ import org.fife.ui.rsyntaxtextarea.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 /**
@@ -35,6 +37,9 @@ import java.util.List;
  */
 // TODO: Anonymous inner classes probably aren't handled well.
 public class JavaLinkGenerator implements LinkGenerator {
+	
+
+    private static final Logger log = Logger.getLogger(JavaLinkGenerator.class.getName());
 
 	private JavaLanguageSupport jls;
 	private JavaCompletionProvider javaCompletionProvider;
@@ -55,6 +60,7 @@ public class JavaLinkGenerator implements LinkGenerator {
         sourceCompletionProvider = (SourceCompletionProvider)javaCompletionProvider.
                 getDefaultCompletionProvider();
         this.memberClickedListener = memberClickedListener;
+        Thread.dumpStack();
     }
 
     public void setMemberClickedListener(MemberClickedListener memberClickedListener) {
@@ -228,7 +234,8 @@ public class JavaLinkGenerator implements LinkGenerator {
                         if(System.currentTimeMillis()-lastAccess < 2000) {
                             return null;
                         }
-                        return new LinkGeneratorResult() {
+//                        Thread.dumpStack();
+                        return new JavaRstaLinkGeneratorResult() {
 
                             @Override
                             public int getSourceOffset() {
@@ -238,13 +245,20 @@ public class JavaLinkGenerator implements LinkGenerator {
 
                             @Override
                             public HyperlinkEvent execute() {
-                                if (memberClickedListener != null) {
-                                    String text2 = result.text.replace("@", "");
-                                    sourceCompletionProvider.open(cu, result.text, td, findCurrentMethod, text2, offs, offs - result.start, memberClickedListener);
-                                }
-//								log.info(2);
-                                return null;
+                                return executeWithCustomListener(memberClickedListener);
                             }
+
+							@Override
+							public HyperlinkEvent executeWithCustomListener(
+									MemberClickedListener memberClickedListener2) {
+                            	// log.info("memberClickedListener 1");
+                                if (memberClickedListener != null) {
+                                	// log.info("memberClickedListener 2");
+                                    String text2 = result.text.replace("@", "");
+                                    sourceCompletionProvider.open(cu, result.text, td, findCurrentMethod, text2, offs, offs - result.start, memberClickedListener2);
+                                }
+								return null;
+							}
                         };
 //                    } else {
 //                    }

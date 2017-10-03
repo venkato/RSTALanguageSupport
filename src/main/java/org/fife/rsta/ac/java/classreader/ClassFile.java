@@ -14,6 +14,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.fife.rsta.ac.java.classreader.attributes.*;
 import org.fife.rsta.ac.java.classreader.constantpool.*;
@@ -26,6 +27,8 @@ import org.fife.rsta.ac.java.classreader.constantpool.*;
  * @version 1.0
  */
 public class ClassFile implements AccessFlags {
+	
+	private static final Logger log = Logger.getLogger(ClassFile.class.getName());
 
 	private static final boolean DEBUG = false;
 
@@ -139,7 +142,7 @@ public class ClassFile implements AccessFlags {
 
 	private void debugPrint(String text) {
 		if (DEBUG) {
-			System.out.println(text);
+			log.fine(text);
 		}
 	}
 

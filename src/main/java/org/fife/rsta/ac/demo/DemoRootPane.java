@@ -18,9 +18,25 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.event.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.tree.TreeNode;
 
 import org.fife.rsta.ac.AbstractSourceTree;
@@ -28,11 +44,9 @@ import org.fife.rsta.ac.LanguageSupport;
 import org.fife.rsta.ac.LanguageSupportFactory;
 import org.fife.rsta.ac.java.JavaLanguageSupport;
 import org.fife.rsta.ac.java.tree.JavaOutlineTree;
-import org.fife.rsta.ac.js.tree.JavaScriptOutlineTree;
-import org.fife.rsta.ac.xml.tree.XmlOutlineTree;
 import org.fife.ui.rsyntaxtextarea.ErrorStrip;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 
@@ -244,12 +258,12 @@ setContentPane(cp);
 		if (SyntaxConstants.SYNTAX_STYLE_JAVA.equals(language)) {
 			tree = new JavaOutlineTree();
 		}
-		else if (SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT.equals(language)) {
-			tree = new JavaScriptOutlineTree();
-		}
-		else if (SyntaxConstants.SYNTAX_STYLE_XML.equals(language)) {
-			tree = new XmlOutlineTree();
-		}
+//		else if (SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT.equals(language)) {
+//			tree = new JavaScriptOutlineTree();
+//		}
+//		else if (SyntaxConstants.SYNTAX_STYLE_XML.equals(language)) {
+//			tree = new XmlOutlineTree();
+//		}
 		else {
 			tree = null;
 		}

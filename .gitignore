@@ -3,5 +3,8 @@ bin
 dist
 javadoc
 *.java~
-build
 .gradle
+/.settings/
+/.classpath
+/.project
+/build/
